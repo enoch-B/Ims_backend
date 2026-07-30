@@ -15,6 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Entity
 public class User {
 
     @Id
@@ -27,8 +28,6 @@ public class User {
     private  String email;
     @Column(name = "password", nullable = false)
     private String password;
-    @Column(name = "role", nullable = false)
-    private String role;
     @Column(name = "phone", nullable = false)
     private String phone;
     @Column(name = "is_active", nullable = false)
@@ -36,6 +35,20 @@ public class User {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @Column(name = "last_update")
+    private LocalDateTime lastUpdate;
 
+    @ManyToOne(targetEntity = Role.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 
+    @PrePersist
+    protected void onCreat(){
+        createdAt= LocalDateTime.now();
+        lastUpdate = LocalDateTime.now();
+    }
+    @PreUpdate
+    protected void onUpdate(){
+        lastUpdate = LocalDateTime.now();
+    }
 }
