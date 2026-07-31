@@ -36,6 +36,10 @@ public class User {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
     @Column(name = "must_change_password", nullable = false)
     @Builder.Default
     private boolean mustChangePassword = true;
