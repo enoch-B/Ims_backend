@@ -1,6 +1,6 @@
-package com.wsu.filter;
+package com.wsu.auth.filter;
 
-import com.wsu.util.JwtUtil;
+import com.wsu.auth.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

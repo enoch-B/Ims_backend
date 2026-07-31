@@ -1,7 +1,7 @@
-package com.wsu.security;
+package com.wsu.auth.security;
 
 
-import com.wsu.filter.JwtAuthFilter;
+import com.wsu.auth.filter.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
