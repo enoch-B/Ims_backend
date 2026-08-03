@@ -36,17 +36,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        String email = jwtUtil.extractEmail(token);
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtUtil.isTokenValid(token, email)) {
-                List<String> permissions = jwtUtil.extractPermissions(token);
-                var authorities = permissions.stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .toList();
-                var authToken = new UsernamePasswordAuthenticationToken(email, null, authorities);
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+        try {
+            String type = jwtUtil.extractType(token);
+            String subject = jwtUtil.extractSubject(token);
+
+            if (subject != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (jwtUtil.isTokenValid(token, subject)) {
+
+                    List<SimpleGrantedAuthority> authorities;
+                    if ("password_change".equals(type)) {
+                        authorities = List.of(new SimpleGrantedAuthority("PASSWORD_CHANGE_ONLY"));
+                    } else {
+                        authorities = jwtUtil.extractPermissions(token).stream()
+                                .map(SimpleGrantedAuthority::new)
+                                .toList();
+                    }
+
+                    var authToken = new UsernamePasswordAuthenticationToken(subject, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
+        } catch (Exception e) {
+            // invalid/expired token -> leave context unauthenticated, let downstream 401
         }
 
         filterChain.doFilter(request, response);
