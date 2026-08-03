@@ -20,27 +20,60 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration-ms}")
-    private long expirationMs;
+    @Value("${jwt.access-expiration-ms}")
+    private long accessExpirationMs;
+
+    @Value("${jwt.refresh-expiration-ms}")
+    private long refreshExpirationMs;
 
     private SecretKey key() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(User user) {
+    public String generateAccessToken(User user) {
         List<String> permissionNames = user.getRole().getPermissions().stream()
                 .map(Permission::getName)
                 .toList();
 
         return Jwts.builder()
-                .subject(user.getEmail())
+                .subject(user.getUserName())
                 .claim("role", user.getRole().getName())
                 .claim("permissions", permissionNames)
                 .claim("userId", user.getId())
+                .claim("type", "access")
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expirationMs))
+                .expiration(new Date(System.currentTimeMillis() + accessExpirationMs))
                 .signWith(key())
                 .compact();
+    }
+
+    public String generateRefreshToken(User user) {
+        return Jwts.builder()
+                .subject(user.getUserName())
+                .claim("userId", user.getId())
+                .claim("type", "refresh")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + refreshExpirationMs))
+                .signWith(key())
+                .compact();
+    }
+
+    public String generatePasswordChangeToken(String institutionalId) {
+        return Jwts.builder()
+                .subject(institutionalId)
+                .claim("type", "password_change")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 300000))
+                .signWith(key())
+                .compact();
+    }
+
+    public String extractSubject(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractType(String token) {
+        return extractAllClaims(token).get("type", String.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -48,16 +81,12 @@ public class JwtUtil {
         return extractAllClaims(token).get("permissions", List.class);
     }
 
-    public String extractEmail(String token) {
-        return extractClaim(token, Claims::getSubject);
+    public boolean isTokenValid(String token, String institutionalId) {
+        return extractSubject(token).equals(institutionalId) && !isExpired(token);
     }
 
-    public String extractRole(String token) {
-        return extractAllClaims(token).get("role", String.class);
-    }
-
-    public boolean isTokenValid(String token, String email) {
-        return extractEmail(token).equals(email) && !isExpired(token);
+    public long getAccessExpirationSeconds() {
+        return accessExpirationMs / 1000;
     }
 
     private boolean isExpired(String token) {
