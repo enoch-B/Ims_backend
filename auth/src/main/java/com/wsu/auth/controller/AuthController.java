@@ -1,6 +1,7 @@
 package com.wsu.auth.controller;
 
 import com.wsu.auth.service.AuthService;
+import com.wsu.core.model.dto.requests.ChangePasswordRequest;
 import com.wsu.core.model.dto.requests.LoginRequest;
 import com.wsu.core.model.dto.requests.RefreshRequest;
 import com.wsu.core.model.dto.responses.LoginResponse;
@@ -33,8 +34,8 @@ public class AuthController {
         authService.logout(request.getRefreshToken());
     }
 
-//    @PostMapping("/change-password")
-//    public void changePassword(@RequestBody ChangePasswordRequest request, Authentication auth) {
-//        authService.changePassword(auth.getName(), request.getNewPassword());
-//    }
+    @PostMapping("/change-password")
+    public void changePassword(@RequestBody ChangePasswordRequest request, Authentication auth) {
+        authService.changePassword(auth.getName(), request.getNewPassword());
+    }
 }
