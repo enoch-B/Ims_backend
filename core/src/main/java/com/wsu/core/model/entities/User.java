@@ -5,14 +5,14 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+@Entity
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(exclude = "role")
-@Table(name = "user")
+@Table(name = "app_user")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
 public class User {
 
     @Id
@@ -29,7 +29,7 @@ public class User {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String password;
 
     @ManyToOne(fetch = FetchType.EAGER)
