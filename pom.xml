@@ -25,6 +25,8 @@
 		<module>core</module>
 		<module>app</module>
 		<module>auth</module>
+		<module>placement</module>
+		<module>organization</module>
 	</modules>
 	<scm>
 		<connection/>
