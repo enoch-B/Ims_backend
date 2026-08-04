@@ -28,7 +28,7 @@ import java.util.Properties;
 @PropertySource("classpath:core.properties")
 public class JpaAutoConfiguration {
 
-    private static final String[] ENTITY_PACKAGES = {"com.smilepay.core.model"};
+    private static final String[] ENTITY_PACKAGES = {"com.wsu.core.model.entities"};
 
     @Value("${spring.datasource.driverClassName}")
     private String driverClassName;
@@ -123,7 +123,7 @@ public class JpaAutoConfiguration {
         }
 
         // base packages to scan
-        entityManagerFactoryBean.setPackagesToScan("com.smilepay");
+        entityManagerFactoryBean.setPackagesToScan("com.wsu");
 
         return entityManagerFactoryBean;
     }
