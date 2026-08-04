@@ -2,14 +2,15 @@ package com.wsu.auth.service;
 
 
 import com.wsu.auth.util.JwtUtil;
-import com.wsu.core.Repository.RefreshTokenRepository;
-import com.wsu.core.Repository.UserRepository;
+import com.wsu.core.repository.RefreshTokenRepository;
+import com.wsu.core.repository.UserRepository;
 import com.wsu.core.model.dto.requests.LoginRequest;
 import com.wsu.core.model.dto.requests.RefreshRequest;
 import com.wsu.core.model.dto.responses.LoginResponse;
 import com.wsu.core.model.dto.responses.RefreshResponse;
 import com.wsu.core.model.entities.RefreshToken;
 import com.wsu.core.model.entities.User;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 @Service
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -36,6 +38,7 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
+        log.info("[login]: Login attempt for user: {}", request.getUserName());
         User user = userRepository.findByUserName(request.getUserName());
 
         if (user == null) {
@@ -46,7 +49,7 @@ public class AuthService {
         if (!user.isActive()) {
             throw new IllegalStateException("Account is deactivated");
         }
-        if (!passwordEncoder.matches(request.getPassword(), user.getUserName())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid ID or password");
         }
 
