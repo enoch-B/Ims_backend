@@ -4,7 +4,7 @@ CREATE TABLE department (
                             id              BIGSERIAL PRIMARY KEY,
                             name            VARCHAR(150) NOT NULL,
                             code            VARCHAR(20) UNIQUE NOT NULL,
-                            hod_user_id     BIGINT,
+                            hod_app_user_id     BIGINT,
                             created_at      TIMESTAMP NOT NULL DEFAULT now()
 );
 
@@ -36,10 +36,10 @@ CREATE TABLE role_permission (
                                  PRIMARY KEY (role_id, permission_id)
 );
 
-CREATE TABLE user (
+CREATE TABLE app_user (
                           id                      BIGSERIAL PRIMARY KEY,
                           full_name               VARCHAR(150) NOT NULL,
-                          institutional_id        VARCHAR(30) UNIQUE NOT NULL,
+                          user_name        VARCHAR(30) UNIQUE NOT NULL,
                           email                   VARCHAR(150),
                           password_hash           VARCHAR(255) NOT NULL,
                           role_id                 BIGINT NOT NULL REFERENCES roles(id),
@@ -50,29 +50,29 @@ CREATE TABLE user (
 );
 
 ALTER TABLE department
-    ADD CONSTRAINT fk_department_hod FOREIGN KEY (hod_user_id) REFERENCES user(id);
+    ADD CONSTRAINT fk_department_hod FOREIGN KEY (hod_app_user_id) REFERENCES app_user(id);
 
 CREATE TABLE student (
-                         user_id     BIGINT PRIMARY KEY REFERENCES user(id),
+                         app_user_id     BIGINT PRIMARY KEY REFERENCES app_user(id),
                          batch_id    BIGINT NOT NULL REFERENCES academic_batch(id),
-                         advisor_id  BIGINT REFERENCES user(id)
+                         advisor_id  BIGINT REFERENCES app_user(id)
 );
 
 CREATE TABLE refresh_token (
                                id              BIGSERIAL PRIMARY KEY,
-                               user_id         BIGINT NOT NULL REFERENCES user(id),
+                               app_user_id         BIGINT NOT NULL REFERENCES app_user(id),
                                token_hash      VARCHAR(255) UNIQUE NOT NULL,
                                expires_at      TIMESTAMP NOT NULL,
                                revoked         BOOLEAN NOT NULL DEFAULT FALSE,
                                created_at      TIMESTAMP NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_user_department ON user(department_id);
-CREATE INDEX idx_user_role ON user(role_id);
-CREATE INDEX idx_user_institutional_id ON user(institutional_id);
+CREATE INDEX idx_app_user_department ON app_user(department_id);
+CREATE INDEX idx_app_user_role ON app_user(role_id);
+CREATE INDEX idx_app_user_user_name ON app_user(user_name);
 CREATE INDEX idx_student_advisor ON student(advisor_id);
 CREATE INDEX idx_student_batch ON student(batch_id);
-CREATE INDEX idx_refresh_token_user ON refresh_token(user_id);
+CREATE INDEX idx_refresh_token_app_user ON refresh_token(app_user_id);
 CREATE INDEX idx_refresh_token_hash ON refresh_token(token_hash);
 
 -- seed data
@@ -80,7 +80,7 @@ INSERT INTO permissions (name, description) VALUES
                                                 ('APPROVE_PLACEMENT', 'Approve or reject student placement requests'),
                                                 ('ASSIGN_ADVISOR', 'Assign an advisor to a student'),
                                                 ('SCORE_ADVISOR_EVAL', 'Submit advisor evaluation scores'),
-                                                ('MANAGE_USERS', 'Create/deactivate user accounts'),
+                                                ('MANAGE_USERS', 'Create/deactivate app_user accounts'),
                                                 ('MANAGE_DEPARTMENTS', 'Create/edit departments and batches'),
                                                 ('VIEW_DEPARTMENT_DASHBOARD', 'View department-wide placement/grade dashboards'),
                                                 ('SUBMIT_LOGBOOK', 'Submit own activity log entries'),
