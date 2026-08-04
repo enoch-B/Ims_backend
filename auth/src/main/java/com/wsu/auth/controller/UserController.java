@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/admin/users")
-//@PreAuthorize("hasAuthority('MANAGE_USERS')")
+@PreAuthorize("hasAuthority('MANAGE_USERS')")
 public class UserController {
 
     private final UserService userService;
