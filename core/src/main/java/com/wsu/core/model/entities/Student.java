@@ -5,13 +5,13 @@ import jakarta.persistence.*;
 import lombok.*;
 
 
+@Entity
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "student")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
 public class Student {
 
     @Id

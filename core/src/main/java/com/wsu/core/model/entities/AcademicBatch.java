@@ -6,13 +6,13 @@ import lombok.*;
 
 import java.time.LocalDate;
 
+@Entity
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "academic_batch")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
 public class AcademicBatch {
 
     @Id

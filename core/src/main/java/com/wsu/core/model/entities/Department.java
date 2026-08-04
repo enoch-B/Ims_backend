@@ -6,13 +6,14 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+
+@Entity
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "department")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
 public class Department {
 
     @Id
@@ -27,7 +28,7 @@ public class Department {
     private String code;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hod_user_id")
+    @JoinColumn(name = "hod_app_user_id")
     private User hod;
 
 
