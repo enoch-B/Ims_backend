@@ -1,0 +1,22 @@
+
+INSERT INTO department (name, code) VALUES
+                                        ('Computer Science', 'CS'),
+                                        ('Information Technology', 'IT'),
+                                        ('Information Systems', 'IS'),
+                                        ('Software Engineering', 'SE'),
+                                        ('Electrical and Computer Engineering', 'ECE'),
+                                        ('Civil Engineering', 'CE'),
+                                        ('Mechanical Engineering', 'ME'),
+                                        ('Chemical Engineering', 'CHE'),
+                                        ('Agricultural Engineering', 'AE'),
+                                        ('Public Health', 'PH'),
+                                        ('Nursing', 'NUR'),
+                                        ('Midwifery', 'MID'),
+                                        ('Medicine', 'MED'),
+                                        ('Business Management', 'MGMT'),
+                                        ('Accounting and Finance', 'ACFN'),
+                                        ('Economics', 'ECON'),
+                                        ('Agricultural Economics', 'AGEC'),
+                                        ('Plant Science', 'PLSC'),
+                                        ('Animal Science', 'ANSC'),
+                                        ('Natural Resource Management', 'NRM');
