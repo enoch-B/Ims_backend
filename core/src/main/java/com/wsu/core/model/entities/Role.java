@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Entity
 @Data
 @Table(name = "roles")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
 public class Role {
 
     @Id
@@ -41,7 +41,7 @@ public class Role {
     private LocalDateTime lastUpdate;
 
     @PrePersist
-    protected void onCreat() {
+    protected void onCreate() {
         createdAt = LocalDateTime.now();
         lastUpdate = LocalDateTime.now();
     }
