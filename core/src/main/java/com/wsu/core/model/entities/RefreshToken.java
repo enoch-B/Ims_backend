@@ -6,13 +6,13 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Entity
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "refresh_token")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
 public class RefreshToken {
 
     @Id
@@ -20,7 +20,7 @@ public class RefreshToken {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "app_user_id", nullable = false)
     private Long userId;
 
     @Column(name = "token_hash", unique = true, nullable = false)

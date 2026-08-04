@@ -32,18 +32,10 @@ public class Permission {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-    @Column(name = "last_update")
-    private LocalDateTime lastUpdate;
 
 
     @PrePersist
     protected void onCreat() {
         createdAt = LocalDateTime.now();
-        lastUpdate = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        lastUpdate = LocalDateTime.now();
     }
 }
