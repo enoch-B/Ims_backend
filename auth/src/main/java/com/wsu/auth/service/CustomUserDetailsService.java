@@ -2,7 +2,7 @@ package com.wsu.auth.service;
 
 
 import com.wsu.auth.UserPrincipal;
-import com.wsu.core.Repository.UserRepository;
+import com.wsu.core.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
