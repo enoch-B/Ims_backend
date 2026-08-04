@@ -9,9 +9,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication(scanBasePackages = "com.wsu")
 @ComponentScan(basePackages = {
         "com.wsu.core.*",
-        "com.wsu.app.*"
+        "com.wsu.app.*",
+        "com.wsu.auth.*"
 })
-@EntityScan(basePackages = "com.wsu.core.entity")
+@EntityScan(basePackages = "com.wsu.core.model.entities")
 @EnableJpaRepositories(basePackages = "com.wsu.core.repository")
 public class ImsApplication {
 
