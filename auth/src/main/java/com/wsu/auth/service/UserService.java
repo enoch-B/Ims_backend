@@ -1,15 +1,16 @@
 package com.wsu.auth.service;
 
 import com.wsu.auth.util.TempPasswordGenerator;
-import com.wsu.auth.util.UserNameValidator;
 import com.wsu.core.Exception.ResourceNotFoundException;
 import com.wsu.core.Exception.UserServiceException;
+import com.wsu.core.model.dto.requests.UpdateUserStatusRequest;
+import com.wsu.core.model.dto.responses.FetchUserResponse;
+import com.wsu.core.model.dto.responses.UpdateUserStatusResponse;
 import com.wsu.core.repository.*;
 import com.wsu.core.model.dto.requests.BulkImportResult;
 import com.wsu.core.model.dto.requests.CreateUserRequest;
 import com.wsu.core.model.dto.responses.CreateUserResponse;
 import com.wsu.core.model.entities.*;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,59 +54,79 @@ public class UserService {
         this.refreshTokenRepository=refreshTokenRepository;
     }
 
+
+    /**
+     * Create an app user
+     *
+     * @param req request model
+     * @return {@link CreateUserResponse}
+     * @throws UserServiceException if any error occurs during user creation
+     */
     @Transactional
     public CreateUserResponse createUser(CreateUserRequest req) {
-        validateRequest(req);
 
-        Role role = roleRepository.findByName(req.getRoleName());
+        try {
 
-           if (role == null) {
-            throw new IllegalArgumentException("Role not found: " + req.getRoleName());
-        }
 
-        Department department = null;
-        if (DEPARTMENT_SCOPED_ROLES.contains(req.getRoleName())) {
-            department = departmentRepository.findById(req.getDepartmentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + req.getDepartmentId()));
-        }
+            validateRequest(req);
 
-        String tempPassword = TempPasswordGenerator.generate(8);
+            Role role = roleRepository.findByName(req.getRoleName());
 
-        User user = User.builder()
-                .fullName(req.getFullName())
-                .userName(req.getUserName())
-                .email(req.getEmail())
-                .password(passwordEncoder.encode(tempPassword))
-                .role(role)
-                .department(department)
-                .mustChangePassword(true)
-                .isActive(true)
-                .build();
+            if (role == null) {
+                throw new IllegalArgumentException("Role not found: " + req.getRoleName());
+            }
 
-        User saved = userRepository.save(user);
+            Department department = null;
+            if (DEPARTMENT_SCOPED_ROLES.contains(req.getRoleName())) {
+                department = departmentRepository.findById(req.getDepartmentId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + req.getDepartmentId()));
+            }
 
-        if ("STUDENT".equals(req.getRoleName())) {
-            AcademicBatch batch = academicBatchRepository.findById(req.getBatchId())
-                    .orElseThrow(() -> new IllegalArgumentException("Batch not found: " + req.getBatchId()));
+            String tempPassword = TempPasswordGenerator.generate(8);
 
-            studentRepository.save(Student.builder()
+            User user = User.builder()
+                    .fullName(req.getFullName())
+                    .userName(req.getUserName())
+                    .email(req.getEmail())
+                    .password(passwordEncoder.encode(tempPassword))
+                    .role(role)
+                    .department(department)
+                    .mustChangePassword(true)
+                    .isActive(true)
+                    .build();
+
+            User saved = userRepository.save(user);
+
+            if ("STUDENT".equals(req.getRoleName())) {
+                AcademicBatch batch = academicBatchRepository.findById(req.getBatchId())
+                        .orElseThrow(() -> new IllegalArgumentException("Batch not found: " + req.getBatchId()));
+
+                studentRepository.save(Student.builder()
+                        .userId(saved.getId())
+                        .user(saved)
+                        .batch(batch)
+                        .advisor(null)   // assigned later by HoD
+                        .build());
+            }
+
+            return CreateUserResponse.builder()
                     .userId(saved.getId())
-                    .user(saved)
-                    .batch(batch)
-                    .advisor(null)   // assigned later by HoD
-                    .build());
+                    .fullName(saved.getFullName())
+                    .userName(saved.getUserName())
+                    .roleName(role.getName())
+                    .temporaryPassword(tempPassword)
+                    .build();
+        } catch (Exception e) {
+            throw new UserServiceException("Failed to create user: " + e.getMessage(), e);
         }
-
-        return CreateUserResponse.builder()
-                .userId(saved.getId())
-                .fullName(saved.getFullName())
-                .userName(saved.getUserName())
-                .roleName(role.getName())
-                .temporaryPassword(tempPassword)
-                .build();
     }
 
-
+    /**
+     * Import CSV file which contains student data
+     * @param csvFile csv file
+     * @return {@link BulkImportResult}
+     * @throws UserServiceException if any error occurs during bulk import
+     */
     @Transactional
     public BulkImportResult bulkImportStudents(MultipartFile csvFile) {
         List<CreateUserResponse> created = new ArrayList<>();
@@ -155,6 +176,13 @@ public class UserService {
                 .build();
     }
 
+    /**
+     * Change the temporary password of a user and force
+     * re-login everywhere by revoking all existing refresh tokens.
+     * @param userName unique username of the app user
+     * @param newPassword new Password to be set for the user
+     * @throws IllegalArgumentException if the user is not found
+     */
     public void changePassword(String userName, String newPassword) {
         User user = userRepository.findByUserName(userName);
         if (user == null) {
@@ -170,6 +198,57 @@ public class UserService {
                 .filter(t -> t.getUserId().equals(user.getId()) && !t.isRevoked())
                 .forEach(t -> { t.setRevoked(true); refreshTokenRepository.save(t); });
     }
+
+
+    /**
+     * Fetch List of users
+     * @return List of {@link FetchUserResponse}
+     * @throws UserServiceException if any error occurs during fetching users
+     */
+    public List<FetchUserResponse> getAllUsers() {
+        try {
+            return userRepository.findAll()
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
+        } catch (Exception e) {
+
+            throw new UserServiceException("Failed to retrieve users: " + e.getMessage(), e);
+        }
+
+    }
+
+    //TODO: add account activation and deactivation
+
+    /**
+     * Activate or deactivate user account status
+     *
+     * @param request {@link UpdateUserStatusRequest}
+     * @throws ResourceNotFoundException if the user is not found
+     * @throws UserServiceException if any error occurs during status change
+     */
+    public UpdateUserStatusResponse updateUserStatus(UpdateUserStatusRequest request, Long userId){
+        try {
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+
+            user.setActive(request.isStatus());
+            userRepository.save(user);
+
+            return UpdateUserStatusResponse.builder()
+                    .userId(user.getId())
+                    .status(user.isActive())
+                    .build();
+        } catch (Exception e) {
+            if (e instanceof ResourceNotFoundException) {
+                throw e; // rethrow ResourceNotFoundException
+            }
+            throw new UserServiceException("Failed to change user status: " + e.getMessage(), e);
+        }
+    }
+
+
 
 
     private void validateRequest(CreateUserRequest req) {
@@ -195,5 +274,22 @@ public class UserService {
         if (isStudent && req.getBatchId() == null) {
             throw new UserServiceException("batchId is required for STUDENT role");
         }
+    }
+
+
+
+    public FetchUserResponse toResponse(User user) {
+        return FetchUserResponse.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .userName(user.getUserName())
+                .email(user.getEmail())
+                .roleName(user.getRole().getName())
+                .departmentId(user.getDepartment() != null ? user.getDepartment().getId() : null)
+                .departmentName(user.getDepartment() != null ? user.getDepartment().getName() : null)
+                .active(user.isActive())
+                .mustChangePassword(user.isMustChangePassword())
+                .createdAt(user.getCreatedAt())
+                .build();
     }
 }
