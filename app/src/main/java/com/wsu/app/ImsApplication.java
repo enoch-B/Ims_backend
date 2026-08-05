@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "com.wsu.core.*",
         "com.wsu.app.*",
         "com.wsu.auth.*",
-        "com.wsu.department.*"
+        "com.wsu.organization.*"
 })
 @EntityScan(basePackages = "com.wsu.core.model.entities")
 @EnableJpaRepositories(basePackages = "com.wsu.core.repository")
