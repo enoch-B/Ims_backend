@@ -22,6 +22,12 @@
             <artifactId>auth</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.wsu</groupId>
+            <artifactId>organization</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
     <properties>
