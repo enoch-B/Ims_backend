@@ -2,6 +2,7 @@ package com.wsu.organization.service;
 
 
 import com.wsu.core.Exception.DepartmentServiceException;
+import com.wsu.core.Exception.ResourceNotFoundException;
 import com.wsu.core.model.dto.requests.DepartmentRequest;
 import com.wsu.core.model.dto.responses.DepartmentResponse;
 import com.wsu.core.model.entities.Department;
@@ -67,4 +68,56 @@ public class DepartmentService {
             throw new DepartmentServiceException("Failed to retrieve departments: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Update department information
+     *
+     * @param request {@link DepartmentRequest}
+     * @param id department id
+     * @return {@link DepartmentResponse}
+     * @throws ResourceNotFoundException if department with given id is not found
+     * @throws DepartmentServiceException if any other error occurs during the update process
+     */
+    public  DepartmentResponse updateDepartment(DepartmentRequest request, Long id){
+        try{
+            Department department=departmentRepository.findById(id)
+                    .orElseThrow(()->new ResourceNotFoundException("Department with id "+id+" not found"));
+            Department updated= departmentRepository.save(Department.builder()
+                    .name(request.getName()  != null ? request.getName() : department.getName())
+                    .code(request.getCode() !=null ? request.getCode() : department.getCode())
+                    .hod(department.getHod() !=null  ? request.getHodId() !=null ? userRepository.findById(request.getHodId()).orElseThrow(()->new ResourceNotFoundException("User with id "+request.getHodId()+" not found")) : department.getHod() : null)
+                    .build());
+
+            return DepartmentResponse.builder()
+                    .id(updated.getId())
+                    .name(updated.getName())
+                    .code(updated.getCode())
+                    .hod(updated.getId())
+                    .build();
+
+        }catch (ResourceNotFoundException e){
+            throw e;
+        }catch (Exception e){
+            throw new DepartmentServiceException("Failed to update department: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * Delete department by id
+     * @param id department id
+     *
+     */
+    public void deleteDepartment(Long id){
+        try{
+            Department department=departmentRepository.findById(id)
+                    .orElseThrow(()->new ResourceNotFoundException("Department with id "+id+" not found"));
+            departmentRepository.delete(department);
+        }catch (ResourceNotFoundException e){
+            throw e;
+        }catch (Exception e){
+            throw new DepartmentServiceException("Failed to delete department: " + e.getMessage());
+        }
+    }
+
 }

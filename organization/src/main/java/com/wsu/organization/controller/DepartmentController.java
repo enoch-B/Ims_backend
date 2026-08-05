@@ -28,4 +28,15 @@ public class DepartmentController {
     public ResponseEntity<?> getAllDepartments(){
         return ResponseEntity.ok(departmentService.getAllDepartments());
     }
+    @PatchMapping("/update/{depId}")
+    public ResponseEntity<?> updateDepartment(@PathVariable Long depId, @RequestBody DepartmentRequest request){
+        DepartmentResponse response = departmentService.updateDepartment(request, depId);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/delete/{depId}")
+    public ResponseEntity<?> deleteDepartment(@PathVariable Long depId){
+        departmentService.deleteDepartment(depId);
+        return ResponseEntity.ok("Department deleted successfully");
+    }
 }
