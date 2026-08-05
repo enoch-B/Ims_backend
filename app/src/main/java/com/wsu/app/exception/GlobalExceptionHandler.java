@@ -1,14 +1,12 @@
 package com.wsu.app.exception;
 
 
-import com.wsu.core.Exception.DepartmentServiceException;
-import com.wsu.core.Exception.ExceptionResponse;
-import com.wsu.core.Exception.ResourceNotFoundException;
-import com.wsu.core.Exception.UserServiceException;
+import com.wsu.core.Exception.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -21,7 +19,7 @@ import java.security.SignatureException;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = {UserServiceException.class, DepartmentServiceException.class})
+    @ExceptionHandler(value = {UserServiceException.class, DepartmentServiceException.class, AuthServiceException.class})
     public ResponseEntity<ExceptionResponse> handleServiceException(Exception exception, WebRequest request) {
         log.error("[handleServiceException]: service exception: {}", exception.getMessage());
         ExceptionResponse error = new ExceptionResponse();
@@ -31,6 +29,18 @@ public class GlobalExceptionHandler {
         error.setErrorCode("SERVICE_ERROR");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
+    @ExceptionHandler(value = {UnauthorizedException.class, BadCredentialsException.class})
+    public ResponseEntity<ExceptionResponse> handleUnauthorizedException(Exception exception, WebRequest request) {
+        log.error("[handleUnauthorizedException]: unauthorized access: {}", exception.getMessage());
+        ExceptionResponse error = new ExceptionResponse();
+        error.setMessage("Unauthorized Access");
+        error.setStatus(HttpStatus.UNAUTHORIZED.value());
+        error.setUri(((ServletWebRequest) request).getRequest().getRequestURI());
+        error.setErrorCode("UNAUTHORIZED");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
     @ExceptionHandler(value = {AccessDeniedException.class, SignatureException.class})
     public ResponseEntity<ExceptionResponse> handleAccessDenied(Exception exception, WebRequest request) {
 
