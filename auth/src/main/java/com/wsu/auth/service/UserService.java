@@ -3,6 +3,7 @@ package com.wsu.auth.service;
 import com.wsu.auth.util.TempPasswordGenerator;
 import com.wsu.core.Exception.ResourceNotFoundException;
 import com.wsu.core.Exception.UserServiceException;
+import com.wsu.core.model.dto.requests.UpdateUserRequest;
 import com.wsu.core.model.dto.requests.UpdateUserStatusRequest;
 import com.wsu.core.model.dto.responses.FetchUserResponse;
 import com.wsu.core.model.dto.responses.UpdateUserStatusResponse;
@@ -218,8 +219,6 @@ public class UserService {
 
     }
 
-    //TODO: add account activation and deactivation
-
     /**
      * Activate or deactivate user account status
      *
@@ -245,6 +244,34 @@ public class UserService {
                 throw e; // rethrow ResourceNotFoundException
             }
             throw new UserServiceException("Failed to change user status: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Update user information
+     *
+     * @param request {@link UpdateUserRequest} request model
+     * @param id User Id
+     * @return {@link FetchUserResponse} updated user information
+     * @throws ResourceNotFoundException if the user is not found
+     * @throws UserServiceException if any error occurs during user update
+     */
+    public FetchUserResponse updateUser(UpdateUserRequest request, Long id){
+        try{
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+
+            User updatedUser = userRepository.save(user.builder()
+                    .fullName(request.getFullName() != null ? request.getFullName() : user.getFullName())
+                    .email(request.getEmail() != null ? request.getEmail() : user.getEmail())
+                    .build());
+            return toResponse(updatedUser);
+        }
+        catch (Exception e) {
+            if (e instanceof ResourceNotFoundException) {
+                throw e; // rethrow ResourceNotFoundException
+            }
+            throw new UserServiceException("Failed to update user: " + e.getMessage(), e);
         }
     }
 

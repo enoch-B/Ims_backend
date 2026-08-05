@@ -4,8 +4,10 @@ package com.wsu.auth.controller;
 import com.wsu.auth.service.UserService;
 import com.wsu.core.model.dto.requests.BulkImportResult;
 import com.wsu.core.model.dto.requests.CreateUserRequest;
+import com.wsu.core.model.dto.requests.UpdateUserRequest;
 import com.wsu.core.model.dto.requests.UpdateUserStatusRequest;
 import com.wsu.core.model.dto.responses.CreateUserResponse;
+import com.wsu.core.model.dto.responses.FetchUserResponse;
 import com.wsu.core.model.dto.responses.UpdateUserStatusResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,6 +42,12 @@ public class UserController {
     @PostMapping("/status/{userId}")
     public ResponseEntity<?> updateUserStatus(@RequestBody UpdateUserStatusRequest request, @PathVariable Long userId) {
         UpdateUserStatusResponse response = userService.updateUserStatus(request, userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/update/{userId}")
+    public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest request, @PathVariable Long userId) {
+        FetchUserResponse response = userService.updateUser(request, userId);
         return ResponseEntity.ok(response);
     }
 
