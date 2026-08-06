@@ -1,6 +1,7 @@
 package com.wsu.auth.controller;
 
 
+import com.wsu.auth.service.UserPrincipal;
 import com.wsu.auth.service.UserService;
 import com.wsu.core.model.dto.requests.BulkImportResult;
 import com.wsu.core.model.dto.requests.CreateUserRequest;
@@ -11,6 +12,7 @@ import com.wsu.core.model.dto.responses.FetchUserResponse;
 import com.wsu.core.model.dto.responses.UpdateUserStatusResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,6 +51,11 @@ public class UserController {
     public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest request, @PathVariable Long userId) {
         FetchUserResponse response = userService.updateUser(request, userId);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/me")
+    public FetchUserResponse me(@AuthenticationPrincipal UserPrincipal principal) {
+        return userService.getCurrentUser(principal.getUserId());
     }
 
 
