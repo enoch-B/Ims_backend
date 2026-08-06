@@ -275,6 +275,27 @@ public class UserService {
         }
     }
 
+    /**
+     * Fetch current logged-in user information
+     * @param userId userId
+     * @return {@link FetchUserResponse} current user information
+     * @throws ResourceNotFoundException if the user is not found
+     * @throws UserServiceException if any error occurs during fetching user information
+     */
+    public FetchUserResponse getCurrentUser(Long userId){
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+            return toResponse(user);
+        } catch (Exception e) {
+            if (e instanceof ResourceNotFoundException) {
+                throw e; // rethrow ResourceNotFoundException
+            }
+            throw new UserServiceException("Failed to fetch current user: " + e.getMessage(), e);
+        }
+    }
+
+
 
 
 
