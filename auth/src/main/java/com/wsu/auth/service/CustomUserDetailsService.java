@@ -1,7 +1,7 @@
 package com.wsu.auth.service;
 
 
-import com.wsu.auth.UserPrincipal;
+import com.wsu.auth.service.UserPrincipal;
 import com.wsu.core.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
