@@ -1,5 +1,6 @@
 package com.wsu.auth.filter;
 
+import com.wsu.auth.service.UserPrincipal;
 import com.wsu.auth.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -44,17 +45,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (subject != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtUtil.isTokenValid(token, subject)) {
 
-                    List<SimpleGrantedAuthority> authorities;
                     if ("password_change".equals(type)) {
-                        authorities = List.of(new SimpleGrantedAuthority("PASSWORD_CHANGE_ONLY"));
+                        var authorities = List.of(new SimpleGrantedAuthority("PASSWORD_CHANGE_ONLY"));
+                        var authToken = new UsernamePasswordAuthenticationToken(subject, null, authorities);
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
                     } else {
-                        authorities = jwtUtil.extractPermissions(token).stream()
+                        Long userId = jwtUtil.extractUserId(token);
+                        String role = jwtUtil.extractRole(token);
+                        List<String> permissions = jwtUtil.extractPermissions(token);
+
+                        var authorities = permissions.stream()
                                 .map(SimpleGrantedAuthority::new)
                                 .toList();
-                    }
 
-                    var authToken = new UsernamePasswordAuthenticationToken(subject, null, authorities);
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                        UserPrincipal principal = UserPrincipal.fromJwtClaims(userId, subject, role, authorities);
+
+                        var authToken = new UsernamePasswordAuthenticationToken(principal, null, authorities);
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
                 }
             }
         } catch (Exception e) {

@@ -80,6 +80,12 @@ public class JwtUtil {
     public List<String> extractPermissions(String token) {
         return extractAllClaims(token).get("permissions", List.class);
     }
+    public Long extractUserId(String token) {
+        return extractAllClaims(token).get("userId", Long.class);
+    }
+    public String extractRole(String token) {
+        return extractAllClaims(token).get("role", String.class);
+    }
 
     public boolean isTokenValid(String token, String institutionalId) {
         return extractSubject(token).equals(institutionalId) && !isExpired(token);
