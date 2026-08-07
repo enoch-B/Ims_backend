@@ -12,6 +12,10 @@ import com.wsu.core.model.dto.requests.BulkImportResult;
 import com.wsu.core.model.dto.requests.CreateUserRequest;
 import com.wsu.core.model.dto.responses.CreateUserResponse;
 import com.wsu.core.model.entities.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -295,6 +299,24 @@ public class UserService {
         }
     }
 
+    /**
+     * Fetch users in a paginated manner
+     *
+     * @param page page number
+     * @param size size
+     * @return {@link Page<FetchUserResponse>} paginated user information
+     * @throws UserServiceException if any error occurs during fetching users
+     */
+    public Page<FetchUserResponse> getUsersPaginated(int page, int size) {
+        try {
+            Pageable pageable= PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+            Page<User> userPage = userRepository.findAll(pageable);
+            return userPage.map(this::toResponse);
+        } catch (Exception e) {
+            throw new UserServiceException("Failed to fetch users paginated: " + e.getMessage(), e);
+        }
+    }
 
 
 
