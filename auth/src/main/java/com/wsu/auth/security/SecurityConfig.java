@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 @Configuration
-@Profile("!no-security")
 @EnableMethodSecurity
 public class SecurityConfig {
 
@@ -36,7 +36,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex
@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .accessDeniedHandler(forbiddenHandler())              // valid token, wrong permission -> 403
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
                         .requestMatchers("/api/auth/change-password").hasAnyAuthority("PASSWORD_CHANGE_ONLY")
                         .requestMatchers("/api/company-eval/**").permitAll()
@@ -56,7 +57,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:8080"));
+        config.setAllowedOrigins(List.of("http://localhost:8080","http://192.168.1.3:8080"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
