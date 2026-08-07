@@ -10,6 +10,7 @@ import com.wsu.core.model.dto.requests.UpdateUserStatusRequest;
 import com.wsu.core.model.dto.responses.CreateUserResponse;
 import com.wsu.core.model.dto.responses.FetchUserResponse;
 import com.wsu.core.model.dto.responses.UpdateUserStatusResponse;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,7 +37,7 @@ public class UserController {
     public BulkImportResult bulkImportStudents(@RequestParam("file") MultipartFile csvFile) {
         return userService.bulkImportStudents(csvFile);
     }
-    @GetMapping("/getAll")
+    @GetMapping("/list")
     public ResponseEntity<?> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
@@ -56,6 +57,14 @@ public class UserController {
     @GetMapping("/me")
     public FetchUserResponse me(@AuthenticationPrincipal UserPrincipal principal) {
         return userService.getCurrentUser(principal.getUserId());
+    }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<?> getUserById(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20" ) int size) {
+        Page<FetchUserResponse> response = userService.getUsersPaginated(page, size);
+        return ResponseEntity.ok(response);
     }
 
 
