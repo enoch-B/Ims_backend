@@ -39,18 +39,18 @@ public class DepartmentService {
                     .code(request.getCode())
                     .build();
 
-            departmentRepository.save(department);
+           Department saved= departmentRepository.save(department);
             return DepartmentResponse.builder()
-                    .id(department.getId())
-                    .name(department.getName())
-                    .code(department.getCode())
-                    .hod(department.getHod().getId())
+                    .id(saved.getId())
+                    .name(saved.getName())
+                    .code(saved.getCode())
+                    .hod(saved.getHod()!= null ? saved.getHod().getId() : null)
                     .build();
         } catch (Exception e) {
             if (e instanceof IllegalArgumentException) {
                 throw e; // rethrow the exception to be handled by the controller
             }
-            throw new DepartmentServiceException("Failed to add department: " + e.getMessage(), e);
+            throw new DepartmentServiceException("Failed to add department: ");
         }
     }
 
@@ -78,15 +78,18 @@ public class DepartmentService {
      * @throws ResourceNotFoundException if department with given id is not found
      * @throws DepartmentServiceException if any other error occurs during the update process
      */
-    public  DepartmentResponse updateDepartment(DepartmentRequest request, Long id){
+    public  DepartmentResponse updateDepartment( Long id, DepartmentRequest request){
         try{
+            log.info("[updateDepartment] Updating department with id {}: {}", id, request);
+
             Department department=departmentRepository.findById(id)
                     .orElseThrow(()->new ResourceNotFoundException("Department with id "+id+" not found"));
-            Department updated= departmentRepository.save(Department.builder()
-                    .name(request.getName()  != null ? request.getName() : department.getName())
-                    .code(request.getCode() !=null ? request.getCode() : department.getCode())
-                    .hod(department.getHod() !=null  ? request.getHodId() !=null ? userRepository.findById(request.getHodId()).orElseThrow(()->new ResourceNotFoundException("User with id "+request.getHodId()+" not found")) : department.getHod() : null)
-                    .build());
+            log.info("[updateDepartment] Found department: {}", department);
+
+            department.setName(request.getName() != null ? request.getName() : department.getName());
+            department.setCode(request.getCode() !=null ? request.getCode() : department.getCode());
+
+            Department updated = departmentRepository.save(department);
 
             return DepartmentResponse.builder()
                     .id(updated.getId())
