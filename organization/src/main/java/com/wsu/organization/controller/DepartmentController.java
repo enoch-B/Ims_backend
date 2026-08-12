@@ -30,7 +30,7 @@ public class DepartmentController {
     }
     @PatchMapping("/update/{depId}")
     public ResponseEntity<?> updateDepartment(@PathVariable Long depId, @RequestBody DepartmentRequest request){
-        DepartmentResponse response = departmentService.updateDepartment(request, depId);
+        DepartmentResponse response = departmentService.updateDepartment(depId, request);
         return ResponseEntity.ok(response);
     }
 
