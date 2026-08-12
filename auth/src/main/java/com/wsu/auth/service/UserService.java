@@ -73,6 +73,7 @@ public class UserService {
     public CreateUserResponse createUser(CreateUserRequest req) {
 
         try {
+            log.info("[createUser]: Creating user for: {} ", req);
 
 
             validateRequest(req);
