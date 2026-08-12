@@ -12,6 +12,7 @@ import com.wsu.core.model.dto.requests.BulkImportResult;
 import com.wsu.core.model.dto.requests.CreateUserRequest;
 import com.wsu.core.model.dto.responses.CreateUserResponse;
 import com.wsu.core.model.entities.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class UserService {
 
@@ -262,14 +264,15 @@ public class UserService {
      */
     public FetchUserResponse updateUser(UpdateUserRequest request, Long id){
         try{
+            log.info("[updateUser]: Updating user information for userId: {}", id);
             User user = userRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
 
-            User updatedUser = userRepository.save(user.builder()
-                    .fullName(request.getFullName() != null ? request.getFullName() : user.getFullName())
-                    .email(request.getEmail() != null ? request.getEmail() : user.getEmail())
-                    .build());
-            return toResponse(updatedUser);
+            user.setFullName(request.getFullName());
+            user.setEmail(request.getEmail());
+
+            User saved = userRepository.save(user);
+            return toResponse(saved);
         }
         catch (Exception e) {
             if (e instanceof ResourceNotFoundException) {
