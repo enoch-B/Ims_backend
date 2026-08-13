@@ -13,10 +13,12 @@ import com.wsu.core.model.dto.requests.CreateUserRequest;
 import com.wsu.core.model.dto.responses.CreateUserResponse;
 import com.wsu.core.model.entities.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +63,18 @@ public class UserService {
         this.refreshTokenRepository=refreshTokenRepository;
     }
 
+    @Value("${bootstrap.secret}")
+    private String secret;
 
+
+    /**
+     * Check if any user exists in database
+     *
+     * @return true if user exists else false
+     */
+    public boolean isUserExist(){
+        return userRepository.findAll().isEmpty();
+    }
     /**
      * Create an app user
      *
@@ -75,6 +88,11 @@ public class UserService {
         try {
             log.info("[createUser]: Creating user for: {} ", req);
 
+            if (!isUserExist()){
+                if (secret == null || secret.isBlank() || !req.getBootstrapSecret().equals(secret)){
+                    throw new BadCredentialsException("Invalid token");
+                }
+            }
 
             validateRequest(req);
 
