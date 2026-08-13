@@ -18,5 +18,6 @@ public class CreateUserRequest {
     private Long departmentId;
     private Long batchId;
     private String password;
+    private String bootstrapSecret;
 
 }
