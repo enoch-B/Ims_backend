@@ -149,6 +149,7 @@ public class AuthService {
      * @param refreshToken the refresh token to be revoked
      */
     public void logout(String refreshToken) {
+        log.info("[logout]: Logging out");
         String tokenHash = hashToken(refreshToken);
         RefreshToken token = refreshTokenRepository.findByTokenHash(tokenHash);
         if (token != null) {
