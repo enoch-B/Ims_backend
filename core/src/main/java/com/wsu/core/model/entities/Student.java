@@ -15,13 +15,13 @@ import lombok.*;
 public class Student {
 
     @Id
-    @Column(name = "user_id")
+    @Column(name = "app_user_id")
     @EqualsAndHashCode.Include
     private Long userId;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId   // tells Hibernate: this entity's PK IS the referenced entity's PK
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "app_user_id")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
