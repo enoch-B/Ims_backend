@@ -90,7 +90,9 @@ public class UserService {
                         .orElseThrow(() -> new ResourceNotFoundException("Department not found: " + req.getDepartmentId()));
             }
 
-            String tempPassword = TempPasswordGenerator.generate(8);
+            String tempPassword = req.getPassword() != null && !req.getPassword().trim().isEmpty() 
+                    ? req.getPassword() 
+                    : TempPasswordGenerator.generate(8);
 
             User user = User.builder()
                     .fullName(req.getFullName())
@@ -110,7 +112,6 @@ public class UserService {
                         .orElseThrow(() -> new IllegalArgumentException("Batch not found: " + req.getBatchId()));
 
                 studentRepository.save(Student.builder()
-                        .userId(saved.getId())
                         .user(saved)
                         .batch(batch)
                         .advisor(null)   // assigned later by HoD
@@ -122,11 +123,20 @@ public class UserService {
                     .fullName(saved.getFullName())
                     .userName(saved.getUserName())
                     .roleName(role.getName())
-                    .temporaryPassword(tempPassword)
+                    .temporaryPassword(req.getPassword())
                     .build();
         } catch (Exception e) {
             throw new UserServiceException("Failed to create user: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Generate Temporary Password
+     * @return String
+     */
+    public String generateTempPassword(){
+
+        return TempPasswordGenerator.generate(8);
     }
 
     /**
@@ -292,6 +302,7 @@ public class UserService {
      */
     public FetchUserResponse getCurrentUser(Long userId){
         try {
+            log.info("[getCurrentUser]: Fetching profile for user :{}", userId);
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
             return toResponse(user);
