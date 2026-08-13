@@ -2,6 +2,9 @@ package com.wsu.auth.filter;
 
 import com.wsu.auth.service.UserPrincipal;
 import com.wsu.auth.util.JwtUtil;
+import com.wsu.core.Exception.ResourceNotFoundException;
+import com.wsu.core.model.entities.User;
+import com.wsu.core.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,9 +22,11 @@ import java.util.List;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
-    public JwtAuthFilter(JwtUtil jwtUtil) {
+    public JwtAuthFilter(JwtUtil jwtUtil, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
+        this.userRepository=userRepository;
     }
 
     @Override
@@ -58,7 +63,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 .map(SimpleGrantedAuthority::new)
                                 .toList();
 
-                        UserPrincipal principal = UserPrincipal.fromJwtClaims(userId, subject, role, authorities);
+                        User user= userRepository.findById(userId)
+                                .orElseThrow(()-> new ResourceNotFoundException("User Not found"));
+
+                       //UserPrincipal principal = UserPrincipal.fromJwtClaims(userId, subject, role, authorities);
+                        UserPrincipal principal= new UserPrincipal(user);
 
                         var authToken = new UsernamePasswordAuthenticationToken(principal, null, authorities);
                         SecurityContextHolder.getContext().setAuthentication(authToken);
