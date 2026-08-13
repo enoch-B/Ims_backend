@@ -17,5 +17,6 @@ public class CreateUserRequest {
     private String roleName;
     private Long departmentId;
     private Long batchId;
+    private String password;
 
 }
