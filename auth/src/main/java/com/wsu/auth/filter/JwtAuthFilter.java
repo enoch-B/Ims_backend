@@ -1,5 +1,6 @@
 package com.wsu.auth.filter;
 
+import com.wsu.auth.service.CustomUserDetailsService;
 import com.wsu.auth.service.UserPrincipal;
 import com.wsu.auth.util.JwtUtil;
 import com.wsu.core.Exception.ResourceNotFoundException;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -23,10 +25,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final CustomUserDetailsService userDetailsService;
 
-    public JwtAuthFilter(JwtUtil jwtUtil, UserRepository userRepository) {
+    public JwtAuthFilter(JwtUtil jwtUtil, UserRepository userRepository, CustomUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
         this.userRepository=userRepository;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -62,6 +66,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         var authorities = permissions.stream()
                                 .map(SimpleGrantedAuthority::new)
                                 .toList();
+
+//                        UserDetails userDetails= userDetailsService.loadUserByUsername(subject);
 
                         User user= userRepository.findById(userId)
                                 .orElseThrow(()-> new ResourceNotFoundException("User Not found"));

@@ -1,0 +1,10 @@
+.git
+.mvn/
+.mvn/wrapper/
+target/
+*.log
+*.class
+*.jar
+*.war
+*.iml
+.DS_Store

@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ims-config
+data:
+  DATABASE_HOST: postgres
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: imsdb
+  DATABASE_SCHEMA: ims
+  JWT_ACCESS_EXPIRATION_MS: "900000"
+  JWT_REFRESH_EXPIRATION_MS: "604800000"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ims
+  labels:
+    app: ims
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ims
+  template:
+    metadata:
+      labels:
+        app: ims
+    spec:
+      containers:
+        - name: ims
+          image: myapp:1.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8090
+          envFrom:
+            - configMapRef:
+                name: ims-config
+            - secretRef:
+                name: ims-secret
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 250m
+            limits:
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ims-svc
+spec:
+  selector:
+    app: ims
+  ports:
+    - port: 80
+      targetPort: 8090
